@@ -23,7 +23,7 @@ extern "C" {
 /*! \class budgetedDataMatlab
     \brief Class which manipulates sparse array of vectors (similarly to Matlab sparse matrix structure), with added functionality to load data directly from Matlab.
 	
-	Class which manipulates sparse array of vectors (similarly to Matlab sparse matrix structure), with added functionality to load data directly from Matlab. Unlike \link budgetedData\endlink, where we load the data in smaller chunks, in this class we assume that the entire data can be loaded into memory, as it is already loaded in Matlab.
+	Class which manipulates sparse array of vectors (similarly to Matlab sparse matrix structure), with added functionality to load data directly from Matlab. Unlike \link budgetedData \endlink, where we load the data in smaller chunks, in this class we assume that the entire data can be loaded into memory, as it is already loaded in Matlab.
 */
 class budgetedDataMatlab : public budgetedData
 {

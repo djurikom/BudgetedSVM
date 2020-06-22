@@ -3,14 +3,14 @@
 	\brief Implements classes and functions that are used to communicate between C++ and Matlab environment.
 */
 /*
-	Copyright (c) 2013-2014 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
+	Copyright (c) 2013-2020 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
 	All rights reserved.
 	
 	Author	:	Nemanja Djuric, with some parts influenced by LIBSVM C++ code
 	Name	:	budgetedSVM_matlab.cpp
 	Date	:	December 10th, 2012
 	Desc.	:	Implements classes and functions that are used to communicate between C++ and Matlab environment.
-	Version	:	v1.01
+	Version	:	v1.02
 */
 
 #include "../Eigen/Dense"
@@ -1172,7 +1172,9 @@ void printUsageMatlab(bool trainingPhase, parameters *param)
 		mexPrintf("\t d - polynomial kernel degree or sigmoid kernel slope (LLSVM, BSGD; %.2f)\n", (*param).KERNEL_DEGREE_PARAM);
 		mexPrintf("\t i - polynomial or sigmoid kernel intercept (LLSVM, BSGD; %.2f)\n", (*param).KERNEL_COEF_PARAM);		
 		mexPrintf("\t m - budget maintenance in BSGD (0 - removal; 1 - merging, uses Gaussian kernel), OR\n");
-		mexPrintf("\t\t     landmark sampling strategy in LLSVM (0 - random; 1 - k-means; 2 - k-medoids) (%d)\n\n", (*param).MAINTENANCE_SAMPLING_STRATEGY);
+		mexPrintf("\t\t     landmark sampling strategy in LLSVM (0 - random; 1 - k-means; 2 - k-medoids) (%d)\n", (*param).MAINTENANCE_SAMPLING_STRATEGY);
+		mexPrintf("\t C - clone probability when misclassification occurs in AMM (%d)\n", (*param).CLONE_PROBABILITY);
+		mexPrintf("\t y - clone probability decay when weight cloning occurs in AMM (%.2f)\n\n", (*param).CLONE_PROBABILITY_DECAY);
 		
 		mexPrintf("\t z - training and test file are loaded in chunks so that the algorithm can \n");
 		mexPrintf("\t\t     handle budget files on weaker computers; z specifies number of examples loaded in\n");
@@ -1419,6 +1421,20 @@ void parseInputMatlab(parameters *param, const char *paramString, bool trainingP
 					break;
 				case 'S':
 					(*param).VERY_SPARSE_DATA = (unsigned int) (value[i] != 0);
+					break;
+				case 'C':
+					(*param).CLONE_PROBABILITY = value[i];
+					if ((*param).CLONE_PROBABILITY < 0)
+						(*param).CLONE_PROBABILITY = 0;
+					else if ((*param).CLONE_PROBABILITY > 1)
+						(*param).CLONE_PROBABILITY = 1;
+					break;
+				case 'y':
+					(*param).CLONE_PROBABILITY_DECAY = value[i];
+					if ((*param).CLONE_PROBABILITY_DECAY < 0)
+						(*param).CLONE_PROBABILITY_DECAY = 0;
+					else if ((*param).CLONE_PROBABILITY_DECAY > 1)
+						(*param).CLONE_PROBABILITY_DECAY = 1;
 					break;
 
 				default:

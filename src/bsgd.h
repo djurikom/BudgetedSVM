@@ -30,7 +30,7 @@ class budgetedVectorBSGD : public budgetedVector
 	friend class budgetedModelMatlabBSGD;
 	
 	/*! \var static unsigned int numClasses
-		\brief Number of classes of the classification problem, specifies the size of \link alphas\endlink vector.
+		\brief Number of classes of the classification problem, specifies the size of \link alphas \endlink vector.
 	*/
 	/*! \var vector <double> alphas
 		\brief Array of class-specific alpha parameters, used in BSGD algorithm.
@@ -45,7 +45,7 @@ class budgetedVectorBSGD : public budgetedVector
 		
 		/*! \fn unsigned int getNumClasses(void)
 			\brief Get the number of classes in the classification problem.
-			\return Number of classes that are covered by this vector, also the length of \link alphas\endlink.
+			\return Number of classes that are covered by this vector, also the length of \link alphas \endlink.
 		*/	
 		static unsigned int getNumClasses(void)
 		{
@@ -66,7 +66,7 @@ class budgetedVectorBSGD : public budgetedVector
 			\brief Constructor, initializes the vector to all zeros, and also initializes class-specific alpha parameters.
 			\param [in] dim Dimensionality of the vector.
 			\param [in] chnkWght Size of each vector chunk.
-			\param [in] numCls Number of classes in the classification problem, specifies the size of \link alphas\endlink vector.
+			\param [in] numCls Number of classes in the classification problem, specifies the size of \link alphas \endlink vector.
 		*/
 		budgetedVectorBSGD(unsigned int dim = 0, unsigned int chnkWght = 0, unsigned int numCls = 0) : budgetedVector(dim, chnkWght)
 		{
@@ -100,7 +100,7 @@ class budgetedVectorBSGD : public budgetedVector
 };
 
 /*! \class budgetedModelBSGD
-    \brief Class which holds the BSGD model (comprising the support vectors stored as \link budgetedVectorBSGD\endlink), and implements methods to load BSGD model from and save BSGD model to text file.
+    \brief Class which holds the BSGD model (comprising the support vectors stored as \link budgetedVectorBSGD \endlink), and implements methods to load BSGD model from and save BSGD model to text file.
 */
 class budgetedModelBSGD : public budgetedModel
 {

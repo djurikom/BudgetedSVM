@@ -3,14 +3,14 @@
 	\brief Header file defining classes and functions used throughout the budgetedSVM toolbox.
 */
 /* 
-	Copyright (c) 2013-2014 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
+	Copyright (c) 2013-2020 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
 	All rights reserved.
 	
 	Authors	:	Nemanja Djuric
 	Name	:	budgetedSVM.h
 	Date	:	November 29th, 2012
 	Desc.	:	Header file defining classes and functions used throughout the BudgetedSVM toolbox.
-	Version	:	v1.01
+	Version	:	v1.02
 */
 
 #ifndef _BUDGETEDSVM_H
@@ -34,7 +34,7 @@ typedef void (*funcPtr)(const char * text);
 	\brief Prints string to the output.
 	\param [in] text Text to be printed.
 	
-	Prints string to the output. Exactly to which output should be specified by \link setPrintStringFunction\endlink, which modifies the callback that is invoked for printing. This is convinient when simple printf() can not be used, for example if we want to print to Matlab prompt. For example on how to set the printing function in Matlab environment, see the implementation of \link parseInputMatlab\endlink.
+	Prints string to the output. Exactly to which output should be specified by \link setPrintStringFunction \endlink, which modifies the callback that is invoked for printing. This is convinient when simple printf() can not be used, for example if we want to print to Matlab prompt. For example on how to set the printing function in Matlab environment, see the implementation of \link parseInputMatlab \endlink.
 */
 void svmPrintString(const char* text);
 
@@ -43,7 +43,7 @@ void svmPrintString(const char* text);
 	\param [in] printFunc New text-printing function.
 	
 	This function is used to modify the function that is used to print to standard output. 
-	After calling this function, which modifies the callback function for printing, the text is printed simply by invoking \link svmPrintString\endlink. \sa funcPtr
+	After calling this function, which modifies the callback function for printing, the text is printed simply by invoking \link svmPrintString \endlink. \sa funcPtr
 */
 void setPrintStringFunction(funcPtr printFunc);
 
@@ -51,7 +51,7 @@ void setPrintStringFunction(funcPtr printFunc);
 	\brief Prints error string to the output.
 	\param [in] text Text to be printed.
 	
-	Prints error string to the output. Exactly to which output should be specified by \link setPrintErrorStringFunction\endlink, which modifies the callback that is invoked for printing. This is convinient when an error is detected and, prior to printing appropriate message to a user, we want to exit the program. For example on how to set the printing function in Matlab environment, see the implementation of \link parseInputMatlab\endlink.
+	Prints error string to the output. Exactly to which output should be specified by \link setPrintErrorStringFunction \endlink, which modifies the callback that is invoked for printing. This is convinient when an error is detected and, prior to printing appropriate message to a user, we want to exit the program. For example on how to set the printing function in Matlab environment, see the implementation of \link parseInputMatlab \endlink.
 */
 void svmPrintErrorString(const char* text);
 
@@ -60,7 +60,7 @@ void svmPrintErrorString(const char* text);
 	\param [in] printFunc New text-printing function.
 	
 	This function is used to modify the function that is used to print to error output. 
-	After calling this function, which modifies the callback function for printing error string, the text is printed simply by invoking \link svmPrintErrorString\endlink. \sa funcPtr
+	After calling this function, which modifies the callback function for printing error string, the text is printed simply by invoking \link svmPrintErrorString \endlink. \sa funcPtr
 */
 void setPrintErrorStringFunction(funcPtr printFunc);
 
@@ -117,7 +117,7 @@ struct parameters
 		Although the dimensionality of the data set can be found from the training data set during loading, we ask a user to specify it beforehand, as it is usually a known parameter.
 		The reason why we require this as an input is to speed up processing of the data, since the emphasis of the software is on speeding up the training of classification algorithm on 
 		large data, and this little piece of information can help avoid unnecessary bookkeeping tasks. More specifically, the parameter is important for memory management of 
-		\link budgetedVector\endlink, where it is used to find how many weight chunks of size \link CHUNK_WEIGHT\endlink are needed to represent the data.
+		\link budgetedVector \endlink, where it is used to find how many weight chunks of size \link CHUNK_WEIGHT \endlink are needed to represent the data.
 		
 		However, in the case of Matlab interface, it is not required to manually set this parameter as it is easily found by reading the dimensions of the 
 		Matlab structure holding the data set.
@@ -130,7 +130,7 @@ struct parameters
 	/*! \var unsigned int NUM_SUBEPOCHS
 		\brief Number of training subepochs of AMM batch algorithm (default: 1)
 		
-		AMM batch has an option to reassign data points to weights several times during one epoch. In the most extreme case, if \link NUM_SUBEPOCHS\endlink is equal to the 
+		AMM batch has an option to reassign data points to weights several times during one epoch. In the most extreme case, if \link NUM_SUBEPOCHS \endlink is equal to the 
 		size of the data set, we obtain AMM online algorithm. This parameter specifies how many times we reassign points to weights within a single epoch.
 	*/
 	/*! \var double BIAS_TERM
@@ -177,14 +177,14 @@ struct parameters
 		- AMM: As the number of weights in AMM algorithms is infinite, we can set the limit on the number of non-zero weights that can be stored in memory. This can be done in order
 		to avoid memory-related problems. Once the limit is reached, we do not allow creation of new non-zero weights until some get pruned.
 
-		- BSGD: Maximum number of support vectors that can be stored. After the budget is exceeded, \link MAINTENANCE_SAMPLING_STRATEGY\endlink specifies how the number of support vectors is kept limited.
+		- BSGD: Maximum number of support vectors that can be stored. After the budget is exceeded, \link MAINTENANCE_SAMPLING_STRATEGY \endlink specifies how the number of support vectors is kept limited.
 		
 		- LLSVM: In addition, it also specifies the number of landmark points in LLSVM algorithm, that are used to represent the data set in lower-dimensional space using the Nystrom method.
 	*/
 	/*! \var unsigned int MAINTENANCE_SAMPLING_STRATEGY
 		\brief Budget maintenance strategy of BSGD algorithm, 0 - random removal; 1 - merging, OR type of landmark points sampling in LLSVM algorithm, 0 - random; 1 - k-means; 2 - k-medoids (default: 0)
 		
-		- BSGD: Whenever a number of support vectors in BSGD algorithm exceeds \link BUDGET_SIZE\endlink, one of the following budget maintenance steps is performed, depending on the value of the MAINTENANCE_SAMPLING_STRATEGY parameter
+		- BSGD: Whenever a number of support vectors in BSGD algorithm exceeds \link BUDGET_SIZE \endlink, one of the following budget maintenance steps is performed, depending on the value of the MAINTENANCE_SAMPLING_STRATEGY parameter
 			- 0 - deleting random support vector to maintain the budget
 			- 1 - take two support vectors and merging them into one. The new, merged support vector is located on the straight line connecting the two existing support vectors; where exactly on the line is explained in \em computeKmax() function from \em bsdg.cpp file. Then, the two existing support vectors are deleted and the merged vector is inserted in the budget. Note that kernel function for BSGD when merging strategy is chosen defaults to Gaussian kernel. (default setting)
 		
@@ -197,7 +197,7 @@ struct parameters
 		\brief Number of k-means iterations in initialization of LLSVM algorithm (default: 10)
 		
 		In order to find better lower-dimensional representation of the data set using Nystrom method, k-means can be used to improve the choice of landmark points. Unlike in random sampling
-		of landmark points from the data set, cluster centers of k-means will represent \link BUDGET_SIZE\endlink points used for the Nystrom method.
+		of landmark points from the data set, cluster centers of k-means will represent \link BUDGET_SIZE \endlink points used for the Nystrom method.
 	*/
 	/*! \var double KERNEL_GAMMA_PARAM
 		\brief Kernel width parameter in Gaussian kernel exp(-0.5 * KERNEL_GAMMA_PARAM * ||x - y||^2) (default: 1/DIMENSIONALITY)
@@ -225,20 +225,28 @@ struct parameters
 	/*! \var bool RANDOMIZE
 		\brief Randomize (i.e., shuffle) the training data, 1 - randomization on; 0 - randomization off (default: 1)
 	*/
+	/*! \var bool CLONE_PROBABILITY
+		\brief Probability of cloning a true-class weight when a misclassification happens (default: 0.0)
+
+		When a misclassification occurs both the true-class and the incorrect-class weights are updated. However, there is also an option to duplicate the true-class weight before the update step, leading to better performance on highly-nonlinear problems. This is done by throwing a biased coin with this probability and generating a duplicate weight if the throw is successful. Note however that this probability is decreased every time a weight is successfully duplicated, controlled by the parameter \link CLONE_PROBABILITY_DECAY \endlink.
+	*/
+	/*! \var bool CLONE_PROBABILITY_DECAY
+		\brief Value between 0 and 1 by which \link CLONE_PROBABILITY \endlink is decayed after successful weight duplication (default: 0.99)
+	*/
 	/*! \var unsigned int KERNEL
 		\brief Choose the kernel function for kernel-based algorithms, 0 - Gaussian kernel, 1 - polynomial kernel, 2 - linear kernel (default: 0)
 		
 		The parameter indicates which kernel function is used in kernel-based algorithms. Note that there is no such choice for AMM. The following kernels are available for two input data points x and y:
 		
-		- Gaussian: K(x, y) = exp(-0.5 * \link KERNEL_GAMMA_PARAM\endlink * ||x - y||^2)
+		- Gaussian: K(x, y) = exp(-0.5 * \link KERNEL_GAMMA_PARAM \endlink * ||x - y||^2)
 		
-		- Exponential: K(x, y) = exp(-0.5 * \link KERNEL_GAMMA_PARAM\endlink * ||x - y||)
+		- Exponential: K(x, y) = exp(-0.5 * \link KERNEL_GAMMA_PARAM \endlink * ||x - y||)
 		
-		- Polynomial: K(x, y) = (x^T * y + \link KERNEL_COEF_PARAM\endlink)^\link KERNEL_DEGREE_PARAM\endlink
+		- Polynomial: K(x, y) = (x^T * y + \link KERNEL_COEF_PARAM \endlink)^\link KERNEL_DEGREE_PARAM \endlink
 		
 		- Linear: K(x, y) = (x^T * y)
 		
-		- Sigmoid: K(x, y) = tanh(\link KERNEL_DEGREE_PARAM\endlink * x^T * y + \link KERNEL_COEF_PARAM\endlink)
+		- Sigmoid: K(x, y) = tanh(\link KERNEL_DEGREE_PARAM \endlink * x^T * y + \link KERNEL_COEF_PARAM \endlink)
 		
 		- User-defined: To add your kernel function please open file 'src/budgetedSVM.cpp' and modify two userDefinedKernel() methods located there.
 	*/
@@ -252,7 +260,7 @@ struct parameters
 	
 	unsigned int ALGORITHM,	NUM_SUBEPOCHS, NUM_EPOCHS, K_PARAM, DIMENSION, CHUNK_SIZE, CHUNK_WEIGHT, KERNEL, 
 		BUDGET_SIZE, K_MEANS_ITERS, MAINTENANCE_SAMPLING_STRATEGY, VERY_SPARSE_DATA;
-	double       C_PARAM, BIAS_TERM, KERNEL_GAMMA_PARAM, KERNEL_DEGREE_PARAM, KERNEL_COEF_PARAM, LAMBDA_PARAM;
+	double       C_PARAM, BIAS_TERM, KERNEL_GAMMA_PARAM, KERNEL_DEGREE_PARAM, KERNEL_COEF_PARAM, LAMBDA_PARAM, CLONE_PROBABILITY, CLONE_PROBABILITY_DECAY;
 	bool         VERBOSE, RANDOMIZE, OUTPUT_SCORES;
 	
 	/*! \fn parameters(void)
@@ -280,7 +288,10 @@ struct parameters
 		KERNEL_COEF_PARAM				= 1.0;			// coefficient (intercept) in polynomial and sigmoid kernels
 		
 		K_MEANS_ITERS					= 10;			// number of k-means / k-medoids iterations during initialization
-		
+
+		CLONE_PROBABILITY				= 0.0;			// probability of creating a clone weight
+		CLONE_PROBABILITY_DECAY			= 0.99;			// decay of clone probability
+
 		VERBOSE							= 0;        	// verbose output
 		OUTPUT_SCORES					= 0;        	// output the winning class scores in addition to class predictions
 		RANDOMIZE						= 1;        	// randomize (i.e., shuffle) the training data, 1 - randimization on, 0 - randomization off
@@ -330,7 +341,7 @@ class budgetedData
 		
 		During AMM batch training phase we need to keep track of which non-zero weight is assigned to which data point. We store the assignments into text file and load them together with
 		the data chunk currently loaded, as it might be to expensive to store all assignments in memory. In order to keep track of this weight-example mapping, each weight vector
-		also has a unique \link budgetedVector::weightID\endlink, assigned to each vector upon creation. \sa parameters::CHUNK_SIZE \sa budgetedVector::weightID
+		also has a unique \link budgetedVector::weightID \endlink, assigned to each vector upon creation. \sa parameters::CHUNK_SIZE \sa budgetedVector::weightID
 	*/
 	/*! \var const char* ifileName
 		\brief Filename of LIBSVM-style .txt file with input data.
@@ -364,7 +375,7 @@ class budgetedData
 	*/
 	
 	/*! \var char* al
-		\brief Array of labels of the current data chunk, always of length \link N\endlink.
+		\brief Array of labels of the current data chunk, always of length \link N \endlink.
 	*/
 	/*! \var vector <long> aj
 		\brief Vector of indices of non-zero features of data points of the current data chunk. Where the data points start and end in this vector is specified by \link ai \endlink vector.
@@ -373,7 +384,7 @@ class budgetedData
 		\brief Vector of non-zero features of data points of the current data chunk. Where the data points start and end in this vector is specified by \link ai \endlink vector.
 	*/
 	/*! \var vector <long> ai
-		\brief Vector that tells us where the data point starts in vectors \link an \endlink and \link aj\endlink, always of length \link N\endlink.
+		\brief Vector that tells us where the data point starts in vectors \link an \endlink and \link aj \endlink, always of length \link N \endlink.
 	*/
 	/*! \var vector <int> yLabels
 		\brief Vector of possible labels, either found during loading or initialized during testing phase by the learned model.
@@ -486,7 +497,7 @@ class budgetedData
 		virtual bool readChunk(unsigned int size, bool assign = false);
 		
 		/*! \fn float getElementOfVector(unsigned int vector, unsigned int element)
-			\brief Returns an element of a vector stored in \link budgetedData\endlink structure.
+			\brief Returns an element of a vector stored in \link budgetedData \endlink structure.
 			\param [in] vector Index of the vector (C-style indexing used, starting from 0; note that LibSVM format indices start from 1).
 			\param [in] element Index of the element of the vector (C-style indexing used, starting from 0; note that LibSVM format indices start from 1).
 			\return Element of the vector specified as an input.
@@ -496,12 +507,12 @@ class budgetedData
 		float getElementOfVector(unsigned int vector, unsigned int element);
 		
 		/*! \fn long double getVectorSqrL2Norm(unsigned int vector, parameters *param)
-			\brief Returns a squared L2-norm of a vector stored in \link budgetedData\endlink structure.
+			\brief Returns a squared L2-norm of a vector stored in \link budgetedData \endlink structure.
 			\param [in] vector Index of the vector (C-style indexing used, starting from 0; note that LibSVM format indices start from 1).
 			\param [in] param The parameters of the algorithm.
 			\return Squared L2-norm of a vector.
 			
-			This function returns squared L2-norm of a vector stored in the \link budgetedData\endlink structure. In particular, it is used to speed up the computation of Gaussian kernel.
+			This function returns squared L2-norm of a vector stored in the \link budgetedData \endlink structure. In particular, it is used to speed up the computation of Gaussian kernel.
 		*/		
 		long double getVectorSqrL2Norm(unsigned int vector, parameters *param);
 		
@@ -519,7 +530,7 @@ class budgetedData
 	
 	In order to handle high-dimensional vectors (i.e., data points), we split the data vector into an array of smaller vectors (or chunks; implemented as a vector of arrays), and allocate memory 
 	for each chunk only if it contains at least one element that is non-zero. This is especially beneficial for very sparse data sets, where we can have considerable 
-	memory gains. Each chunk has a pointer to it stored in \link array\endlink, and a pointer is NULL if the chunk has all zero elements; non-NULL pointer points to a chunk 
+	memory gains. Each chunk has a pointer to it stored in \link array \endlink, and a pointer is NULL if the chunk has all zero elements; non-NULL pointer points to a chunk 
 	that has allocated memory and which stores elements of the vector.
 */
 class budgetedVector
@@ -537,7 +548,7 @@ class budgetedVector
 		\brief Number of vector chunks.
 		
 		In order to deal with high-dimensional data, each vector is split into several chunks, and the memory for the chunk is not allocated if all elements of a vector are equal to 0.
-		The static variable \link chunkWeight\endlink specifies how many of these chunks are used to represent each vector. \sa parameters::CHUNK_WEIGHT
+		The static variable \link chunkWeight \endlink specifies how many of these chunks are used to represent each vector. \sa parameters::CHUNK_WEIGHT
 	*/
 	/*! \var unsigned int chunkWeight
 		\brief Length of the vector chunk (implemented as an array). \sa parameters::CHUNK_WEIGHT
@@ -549,7 +560,7 @@ class budgetedVector
 		store in two linked lists feature index and the corresponing feature value. However, we found that updating this data structure can become prohibitively slow, as for
 		high-dimensional data the weights can become much less sparse than the original data due to the weight update process, and the insertion of new elements into vector and vector traversal becomes very slow. 
 		We address this by storing a vector into structure that is a vector of dynamic arrays, where original, large vector is split into parts (or chunks), and each part is stored in an
-		array within the vector structure. If all elements of the large vector within a chunk are zero, we do not allocate memory for that chunk and \link array\endlink element for this chunk will 
+		array within the vector structure. If all elements of the large vector within a chunk are zero, we do not allocate memory for that chunk and \link array \endlink element for this chunk will 
 		be NULL. In our experience, this significantly improves the training and testing time on very high-dimensional sparse data, such as on URL data set with more than 
 		3.2 million features and only 0.004% non-zero values. If \link parameters::CHUNK_WEIGHT \endlink is set to 1, we obtain the LIBSVM-type representation where each chunk 
 		stores only one feature. \sa parameters::CHUNK_WEIGHT
@@ -573,7 +584,7 @@ class budgetedVector
 		long double sqrL2norm;
 		
 		/*! \fn virtual void setSqrL2norm(double newSqrNorm)
-			\brief Returns \link sqrL2norm\endlink, a squared L2-norm of the vector.
+			\brief Returns \link sqrL2norm \endlink, a squared L2-norm of the vector.
 			\return Squared L2-norm of the vector.
 		*/
 		virtual void setSqrL2norm(long double newSqrNorm)
@@ -592,7 +603,7 @@ class budgetedVector
 		virtual void extendDimensionality(unsigned int newDim, parameters* param);
 		
 		/*! \fn virtual long double getSqrL2norm(void)
-			\brief Returns \link sqrL2norm\endlink, a squared L2-norm of the vector.
+			\brief Returns \link sqrL2norm \endlink, a squared L2-norm of the vector.
 			\return Squared L2-norm of the vector.
 		*/
 		virtual long double getSqrL2norm(void)
@@ -601,7 +612,7 @@ class budgetedVector
 		}
 		
 		/*! \fn unsigned int getDimensionality(void)
-			\brief Returns \link dimension\endlink, a dimensionality of a vector.
+			\brief Returns \link dimension \endlink, a dimensionality of a vector.
 			\return Dimensionality of a vector.
 		*/
 		unsigned int getDimensionality(void)
@@ -610,7 +621,7 @@ class budgetedVector
 		}
 		
 		/*! \fn unsigned int getID(void)
-			\brief Returns \link weightID\endlink, a unique ID of a vector.
+			\brief Returns \link weightID \endlink, a unique ID of a vector.
 			\return Unique ID of a vector.
 		*/
 		unsigned int getID(void)
@@ -619,14 +630,14 @@ class budgetedVector
 		}
         
         /*! \fn const float operator[](int idx) const 
-			\brief Overloaded [] operator that returns a vector element stored in \link array\endlink.
+			\brief Overloaded [] operator that returns a vector element stored in \link array \endlink.
 			\param [in] idx Index of vector element that is retrieved.
 			\return Value of the element of the vector.
 		*/	
 		const float operator[](int idx) const;
 		
 		/*! \fn float& operator[](int idx) 
-			\brief Overloaded [] operator that assigns a value to vector element stored in \link array\endlink.
+			\brief Overloaded [] operator that assigns a value to vector element stored in \link array \endlink.
 			\param [in] idx Index of vector element that is modified.
 			\return Value of the modified element of the vector.
 		*/	
@@ -691,7 +702,15 @@ class budgetedVector
 			Initializes elements of a vector using a data point. Simply copies non-zero elements of the data point stored in budgetedData to the vector. If the vector already had non-zero elements, it is first cleared to become a zero-vector before copying the elements of a data point.
 		*/
 		virtual void createVectorUsingDataPoint(budgetedData* inputData, unsigned int t, parameters* param);
-    	
+
+		/*! \fn virtual void createVectorUsingVector(budgetedVector* existingVector)
+			\brief Create new vector from the existing one.
+			\param [in] existingVector Existing vector which will be cloned into the current one.
+
+			Initializes elements of a vector using an existing vector. If the calling vector already had non-zero elements, it is first cleared to become a zero-vector before duplicating the elements of an input vector.
+		*/
+		virtual void createVectorUsingVector(budgetedVector* existingVector);
+
         /*! \fn virtual long double sqrNorm(void)
 			\brief Calculates a squared L2-norm of the vector.
 			\return Squared L2-norm of the vector.
@@ -704,7 +723,7 @@ class budgetedVector
 			\param [in] param The parameters of the algorithm.
 			\return Value of RBF kernel between two vectors.
 			
-			Function computes the value of Gaussian kernel between two vectors. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y||^2 = ||x||^2 - 2 * x^T * y + ||y||^2, where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters\endlink.
+			Function computes the value of Gaussian kernel between two vectors. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y||^2 = ||x||^2 - 2 * x^T * y + ||y||^2, where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters \endlink.
 		*/
 		virtual long double gaussianKernel(budgetedVector* otherVector, parameters *param); 
 		
@@ -716,7 +735,7 @@ class budgetedVector
 			\param [in] param The parameters of the algorithm.
 			\return Value of RBF kernel between two vectors.
 			
-			Function computes the value of Gaussian kernel between budgetedVector vector, and the input data point stored in budgetedData. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y||^2 = ||x||^2 - 2 * x^T * y + ||y||^2, where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters\endlink.
+			Function computes the value of Gaussian kernel between budgetedVector vector, and the input data point stored in budgetedData. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y||^2 = ||x||^2 - 2 * x^T * y + ||y||^2, where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters \endlink.
 		*/
 		virtual long double gaussianKernel(unsigned int t, budgetedData* inputData, parameters *param, long double inputVectorSqrNorm = 0.0);
 		
@@ -726,7 +745,7 @@ class budgetedVector
 			\param [in] param The parameters of the algorithm.
 			\return Value of polynomial kernel between two vectors.
 			
-			Function computes the value of polynomial kernel between two vectors. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y||^2 = ||x||^2 - 2 * x^T * y + ||y||^2, where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters\endlink.
+			Function computes the value of polynomial kernel between two vectors. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y||^2 = ||x||^2 - 2 * x^T * y + ||y||^2, where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters \endlink.
 		*/
 		virtual long double polyKernel(budgetedVector* otherVector, parameters *param); 
 		
@@ -737,7 +756,7 @@ class budgetedVector
 			\param [in] param The parameters of the algorithm.
 			\return Value of polynomial kernel between two vectors.
 			
-			Function computes the value of polynomial kernel between budgetedVector vector, and the input data point stored in budgetedData. The computation is very fast for sparse data, being only linear in a number of non-zero features. For description of the parameters of the kernel see \link parameters\endlink.
+			Function computes the value of polynomial kernel between budgetedVector vector, and the input data point stored in budgetedData. The computation is very fast for sparse data, being only linear in a number of non-zero features. For description of the parameters of the kernel see \link parameters \endlink.
 		*/
 		virtual long double polyKernel(unsigned int t, budgetedData* inputData, parameters *param);
 		
@@ -768,7 +787,7 @@ class budgetedVector
 			\param [in] param The parameters of the algorithm.
 			\return Value of sigmoid kernel between two input vectors.
 			
-			Function computes the value of sigmoid kernel between budgetedVector vector, and the input data point stored in budgetedData. The computation is very fast for sparse data, being only linear in a number of non-zero features. For description of the parameters of the kernel see \link parameters\endlink.
+			Function computes the value of sigmoid kernel between budgetedVector vector, and the input data point stored in budgetedData. The computation is very fast for sparse data, being only linear in a number of non-zero features. For description of the parameters of the kernel see \link parameters \endlink.
 		*/
 		virtual long double sigmoidKernel(unsigned int t, budgetedData* inputData, parameters *param);
 		
@@ -778,7 +797,7 @@ class budgetedVector
 			\param [in] param The parameters of the algorithm.
 			\return Value of sigmoid kernel between two input vectors.
 			
-			Function computes the value of sigmoid kernel between two vectors. The computation is very fast for sparse data, being only linear in a number of non-zero features. For description of the parameters of the kernel see \link parameters\endlink.
+			Function computes the value of sigmoid kernel between two vectors. The computation is very fast for sparse data, being only linear in a number of non-zero features. For description of the parameters of the kernel see \link parameters \endlink.
 		*/
 		virtual long double sigmoidKernel(budgetedVector* otherVector, parameters *param);
 		
@@ -790,7 +809,7 @@ class budgetedVector
 			\param [in] inputVectorSqrNorm If zero or not provided, the norm of t-th vector from inputData is computed on-the-fly.
 			\return Value of exponential kernel between two input vectors.
 			
-			Function computes the value of exponential kernel between budgetedVector vector, and the input data point stored in budgetedData. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y|| = sqrt(||x||^2 - 2 * x^T * y + ||y||^2), where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters\endlink.
+			Function computes the value of exponential kernel between budgetedVector vector, and the input data point stored in budgetedData. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y|| = sqrt(||x||^2 - 2 * x^T * y + ||y||^2), where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters \endlink.
 		*/
 		virtual long double exponentialKernel(unsigned int t, budgetedData* inputData, parameters *param, long double inputVectorSqrNorm = 0.0);
 		
@@ -800,7 +819,7 @@ class budgetedVector
 			\param [in] param The parameters of the algorithm.
 			\return Value of exponential kernel between two input vectors.
 			
-			Function computes the value of exponential kernel between two vectors. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y|| = sqrt(||x||^2 - 2 * x^T * y + ||y||^2), where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters\endlink.
+			Function computes the value of exponential kernel between two vectors. The computation is very fast for sparse data, being only linear in a number of non-zero features. We use the fact that ||x - y|| = sqrt(||x||^2 - 2 * x^T * y + ||y||^2), where all right-hand side elements can be computed efficiently. For description of the parameters of the kernel see \link parameters \endlink.
 		*/
 		virtual long double exponentialKernel(budgetedVector* otherVector, parameters *param);
 		

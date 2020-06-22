@@ -29,6 +29,12 @@ Please read the "./LICENSE.txt" license file before using the BudgetedSVM toolbo
 
 Version history
 ===============
+The current version of the software is v1.2. Compared to the previous v1.1 version,
+we have added the following changes:
+	- Added implementation of Growing AMM (GAMM) algorithm.
+	- The GAMM algorithm is an extension of the AMM method, controlled by the addition 
+		of two additional parameters: cloning probability and cloning probability decay.
+
 The current version of the software is v1.1. Compared to the previous v1.0 version,
 we have added the following changes:
 	- (OBSOLETE) The software is no longer published under GPL v3 license, instead we
@@ -62,31 +68,32 @@ we have added the following changes:
 
 The implemented algorithms
 ==========================
-The BudgetedSVM toolbox implements Pegasos, Adaptive Multi-hyperplane Machines (AMM), 
-Low-rank Linearization SVM (LLSVM), and Budgeted Stochastic Gradient Descent (BSGD)
+The BudgetedSVM toolbox implements Pegasos, Adaptive Multi-hyperplane Machines (AMM) and 
+Growing AMM, Low-rank Linearization SVM (LLSVM), and Budgeted Stochastic Gradient Descent (BSGD) 
 algorithms. An overview of the algorithm properties is given in the table below:
 
 	--------------------------------------------------------------------------------------------------------------
 	| Algorithm | Classifier type | Multi-class? |                     Available kernels                         |
 	==============================================================================================================
 	|  Pegasos  |   Linear        | Multi-class  | Linear                                                        |
-	|  AMM      |   Non-linear    | Multi-class  | Linear                                                        |
+	|  (G)AMM   |   Non-linear    | Multi-class  | Linear                                                        |
 	|  LLSVM    |   Non-linear    | Binary       | Any                                                           |
 	|  BSGD     |   Non-linear    | Multi-class  | Any for random removal, Gaussian when merging support vectors |
 	--------------------------------------------------------------------------------------------------------------
 
 For more details, please see their respective published papers. In particular, 
 the publications can be found here:
-*** "Pegasos: primal estimated sub-gradient solver for SVM" (Pegasos, found at
+*** "Pegasos: primal estimated sub-gradient solver for SVM", ICML 2007 (Pegasos, found at
 http://link.springer.com/article/10.1007/s10107-010-0420-4)
 *** "Trading Representability for Scalability: Adaptive Multi-Hyperplane Machine for 
-Nonlinear Classification" (AMM, found at "../doc/pdfs_of_algorithm_papers/AMM_paper.pdf")
-*** "Scaling up Kernel SVM on Limited Resources: A Low-rank Linearization Approach"
-(LLSVM, found at "../doc/pdfs_of_algorithm_papers/LLSVM_paper.pdf")
+Nonlinear Classification", KDD 2011 (AMM, found at "./doc/pdfs_of_algorithm_papers/AMM_paper.pdf")
+*** "Growing Adaptive Multi-Hyperplane Machines", ICML 2020 (GAMM, found at "./doc/pdfs_of_algorithm_papers/GAMM_paper.pdf")
+*** "Scaling up Kernel SVM on Limited Resources: A Low-rank Linearization Approach", AISTATS 2012
+(LLSVM, found at "./doc/pdfs_of_algorithm_papers/LLSVM_paper.pdf")
 *** "Breaking the Curse of Kernelization: Budgeted Stochastic Gradient Descent for 
-Large-Scale SVM Training" (BSGD, found at "../doc/pdfs_of_algorithm_papers/BSGD_paper.pdf")
+Large-Scale SVM Training", JMLR 2012 (BSGD, found at "./doc/pdfs_of_algorithm_papers/BSGD_paper.pdf")
 
-For our BudgetedSVM paper, which gives a brief overview of the toolbox and summarizes its
+For our BudgetedSVM paper (JMLR 2013) which gives a brief overview of the toolbox and summarizes its
 main features, please see a PDF file at "../doc/pdfs_of_algorithm_papers/BudgetedSVM_paper.pdf".
 
 
@@ -124,9 +131,7 @@ Example from the author's computer:
 
 	>> make
 
-For a list of supported/compatible compilers for Matlab, please check
-the following page:
-
+For a list of supported/compatible compilers for Matlab, please check the following page:
 http://www.mathworks.com/support/compilers/current_release/
 
 
@@ -145,7 +150,7 @@ Inputs:
 	parameter_string	- parameters of the model, if not provided default empty string is assumed
 
 Output:
-	model				- structure that holds the trained model
+	model			- structure that holds the trained model
 	
 
 Since the previous call to budgetedsvm_train() function requires the data set to be loaded to Matlab,
@@ -154,15 +159,14 @@ which can be infeasible for large data, we provide another variant of the call t
 	>> budgetedsvm_train(train_file, model_file, parameter_string = '')
 
 Inputs:
-	train_file			- filename of .txt file containing training data set in LIBSVM format
-	model_file			- filename of .txt file that will contain trained model
+	train_file		- filename of .txt file containing training data set in LIBSVM format
+	model_file		- filename of .txt file that will contain trained model
 	parameter_string	- parameters of the model, defaults to empty string if not provided
 	
 
 Parameter string is of the same format for both versions, specified as follows:
 
 	'-OPTION1 VALUE1 -OPTION2 VALUE2 ...'
-	
 	
 	Following options are available; affected algorithm and default
 	values in parentheses (algorithm not specified if option affects all):
@@ -188,6 +192,8 @@ Parameter string is of the same format for both versions, specified as follows:
 	i - polynomial or sigmoid kernel intercept (LLSVM, BSGD; 1.00)
 	m - budget maintenance in BSGD (0 - removal; 1 - merging, uses Gaussian kernel), OR
 			landmark sampling strategy in LLSVM (0 - random; 1 - k-means; 2 - k-medoids) (1)
+	C - clone probability when misclassification occurs in AMM (0)
+	y - clone probability decay when misclassification occurs in AMM (0.99)
 
 	z - training and test file are loaded in chunks so that the algorithm can 
 			handle budget files on weaker computers; z specifies number of examples loaded in
@@ -210,18 +216,18 @@ In order to evaluate the learned model, run in the Matlab prompt the following c
 	>> [error_rate, pred_labels, pred_scores] = budgetedsvm_predict(labelVector, instanceMatrix, model, parameter_string);
 
 Inputs:
-	labelVector			- label vector of the data set of size (NUM_POINTS x 1), a label can be any number							
-							representing a class, such as 0/1, or +1/-1, or, in the
-							case of multi-class problems, any set of integers
+	labelVector		- label vector of the data set of size (NUM_POINTS x 1), a label can be any number							
+						representing a class, such as 0/1, or +1/-1, or, in the
+						case of multi-class problems, any set of integers
 	instanceMatrix		- instance matrix of size (NUM_POINTS x DIMENSIONALITY),
-							where each row represents one example
-	model				- structure holding the model trained using budgetedsvm_train()
+						where each row represents one example
+	model			- structure holding the model trained using budgetedsvm_train()
 	parameter_string	- parameters of the model, if not provided default empty string is assumed
 
 Output:
-	error_rate			- error rate on the test set
-	pred_labels			- vector of predicted labels of size (NUM_POINTS x 1)
-	pred_scores			- vector of predicted scores of size (NUM_POINTS x 1)
+	error_rate		- error rate on the test set
+	pred_labels		- vector of predicted labels of size (NUM_POINTS x 1)
+	pred_scores		- vector of predicted scores of size (NUM_POINTS x 1)
 
 
 Since the previous call to budgetedsvm_predict() function requires the data set to be loaded to Matlab,
@@ -230,14 +236,14 @@ we also provide another variant of the call to the testing procedure:
 	>> [error_rate, pred_labels, pred_scores] = budgetedsvm_predict(test_file, model_file, parameter_string = '')
 
 	Inputs:
-		test_file			- filename of .txt file containing test data set in LIBSVM format
-		model_file			- filename of .txt file containing model trained through budgetedsvm_train()
+		test_file		- filename of .txt file containing test data set in LIBSVM format
+		model_file		- filename of .txt file containing model trained through budgetedsvm_train()
 		parameter_string	- parameters of the model, defaults to empty string if not provided
 
 	Output:
-		error_rate			- error rate on the test set
-		pred_labels			- vector of predicted labels of size (N x 1)
-		pred_scores			- vector of predicted scores of size (NUM_POINTS x 1)
+		error_rate		- error rate on the test set
+		pred_labels		- vector of predicted labels of size (N x 1)
+		pred_scores		- vector of predicted scores of size (NUM_POINTS x 1)
 
 
 Parameter string is of the same format for both versions, specified as follows:
@@ -253,7 +259,7 @@ Parameter string is of the same format for both versions, specified as follows:
 			in one chunk, ONLY when inputs are .txt files (1000)
 	S - if set to 1 data is assumed sparse, if 0 data assumed non-sparse, used to
 			speed up kernel computations (default is 1 when percentage of non-zero
-		    features is less than 5%, and 0 when percentage is larger than 5%)
+		    	features is less than 5%, and 0 when percentage is larger than 5%)
 	v - verbose output: 1 to show algorithm steps, 0 for quiet mode (0)
 	--------------------------------------------
 
@@ -337,17 +343,17 @@ classification. It is a structure organized as follows ["algorithm", "dimension"
 "numClasses", " labels", " numWeights", " paramBias", " kernel", "kernelGammaParam", 
 "kernelDegreeParam", "kernelInterceptParam", "model"]:
 
-	- algorithm				: algorithm used to train a classification model
-	- dimension				: dimensionality of the data set
+	- algorithm			: algorithm used to train a classification model
+	- dimension			: dimensionality of the data set
 	- numClasses			: number of classes in the data set
-	- labels				: label of each class
+	- labels			: label of each class
 	- numWeights			: number of weights for each class
-	- paramBias				: bias term
-	- kernel				: used kernel function
+	- paramBias			: bias term
+	- kernel			: used kernel function
 	- kernelGammaParam		: width of the Gaussian or exponential kernel
 	- kernelDegreeParam		: degree of polynomial kernel or slope of sigmoid kernel
-	- kernelInterceptParam	: coefficient of polynomial kernel or intercept of sigmoid kernel
-	- model					: the learned model
+	- kernelInterceptParam		: coefficient of polynomial kernel or intercept of sigmoid kernel
+	- model				: the learned model
 
 In order to compress memory and to use the memory efficiently, we coded the model in the following way:
 
@@ -383,7 +389,7 @@ Djuric, N., Lan, L., Vucetic, S., & Wang, Z. (2014). BudgetedSVM: A Toolbox for 
 SVM Approximations. Journal of Machine Learning Research, 14, 3813-3817.
 
 For any questions or comments, please contact Nemanja Djuric at <nemanja@temple.edu>.
-Last updated: August 5th, 2014
+Last updated: June 21st, 2020
 
 
 Acknowledgments

@@ -5,14 +5,14 @@
 	Implements classes and functions used for training and testing of large-scale multi-hyperplane algorithms (AMM batch, AMM online, and Pegasos).
 */
 /* 
-	Copyright (c) 2013-2014 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
+	Copyright (c) 2013-2020 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
 	All rights reserved.
 	
 	Author	:	Nemanja Djuric
 	Name	:	mm_algs.cpp
 	Date	:	November 19th, 2012
 	Desc.	:	Source file for C++ implementation of budget-scale multi-hyperplane algorithms (AMM-batch, AMM-online, PEGASOS).
-	Version	:	v1.01
+	Version	:	v1.02
 */
 
 #include <cmath>
@@ -26,6 +26,21 @@ using namespace std;
 
 #include "budgetedSVM.h"
 #include "mm_algs.h"
+
+// Define local helper functions in anon namespace.
+namespace
+{
+
+/* \fn double get_random_probability(void)
+	\brief Samples a random number is [0, 1] range.
+	\return A random value in [0, 1] range.
+*/
+double get_random_probability(void)
+{
+	return ((double) rand() / (double) RAND_MAX);
+}
+
+} // end namespace
 
 /* \fn ~budgetedModelAMM(void)
 	\brief Destructor, cleans up memory taken by AMM.
@@ -139,28 +154,28 @@ bool budgetedModelAMM::loadFromTextFile(const char *filename, vector <int>* yLab
 		return false;
 	
 	// algorithm
-	fseek (fModel, strlen("ALGORITHM: "), SEEK_CUR);
+	fseek (fModel, (long) strlen("ALGORITHM: "), SEEK_CUR);
 	if (!fscanf(fModel, "%d\n", &((*param).ALGORITHM)))
 	{
 		svmPrintErrorString("Error reading algorithm type from the model file!\n");
 	}
 	
 	// dimension
-	fseek (fModel, strlen("DIMENSION: "), SEEK_CUR);
+	fseek (fModel, (long) strlen("DIMENSION: "), SEEK_CUR);
 	if (!fscanf(fModel, "%d\n", &((*param).DIMENSION)))
 	{
 		svmPrintErrorString("Error reading dimensions from the model file!\n");
 	}
 	
 	// number of classes
-	fseek (fModel, strlen("NUMBER_OF_CLASSES: "), SEEK_CUR);
+	fseek (fModel, (long) strlen("NUMBER_OF_CLASSES: "), SEEK_CUR);
 	if (!fscanf(fModel, "%d\n", &numClasses))
 	{
 		svmPrintErrorString("Error reading number of classes from the model file!\n");
 	}
 	
 	// labels
-	fseek (fModel, strlen("LABELS: "), SEEK_CUR);
+	fseek (fModel, (long) strlen("LABELS: "), SEEK_CUR);
 	for (i = 0; i < numClasses; i++)
 	{
 		if (!fscanf(fModel, "%d ", &tempInt))
@@ -171,7 +186,7 @@ bool budgetedModelAMM::loadFromTextFile(const char *filename, vector <int>* yLab
 	}
 	
 	// number of weights
-	fseek (fModel, strlen("NUMBER_OF_WEIGHTS: "), SEEK_CUR);
+	fseek (fModel, (long) strlen("NUMBER_OF_WEIGHTS: "), SEEK_CUR);
 	for (i = 0; i < numClasses; i++)
 	{
 		if (!fscanf(fModel, "%d\n", &tempInt))
@@ -182,7 +197,7 @@ bool budgetedModelAMM::loadFromTextFile(const char *filename, vector <int>* yLab
 	}
 	
 	// bias parameter
-	fseek(fModel, strlen("BIAS_TERM: "), SEEK_CUR);
+	fseek(fModel, (long) strlen("BIAS_TERM: "), SEEK_CUR);
 	if (!fscanf(fModel, "%f\n", &tempFloat))
 	{
 		svmPrintErrorString("Error reading bias term from the model file!\n");
@@ -190,7 +205,7 @@ bool budgetedModelAMM::loadFromTextFile(const char *filename, vector <int>* yLab
 	(*param).BIAS_TERM = tempFloat;
 	
 	// kernel width (GAMMA) parameter
-	fseek (fModel, strlen("KERNEL_WIDTH: "), SEEK_CUR);
+	fseek (fModel, (long) strlen("KERNEL_WIDTH: "), SEEK_CUR);
 	if (!fscanf(fModel, "%f\n", &tempFloat))
 	{
 		svmPrintErrorString("Error reading kernel width from the model file!\n");
@@ -198,7 +213,7 @@ bool budgetedModelAMM::loadFromTextFile(const char *filename, vector <int>* yLab
 	(*param).KERNEL_GAMMA_PARAM = tempFloat;
 		
 	// load the model
-	fseek (fModel, strlen("MODEL:\n") + 1, SEEK_CUR);
+	fseek (fModel, (long) strlen("MODEL:\n") + 1, SEEK_CUR);
 	for (i = 0; i < numClasses; i++)								// for every class
 	{
 		// add for each class an empty weight matrix
@@ -263,7 +278,7 @@ bool budgetedModelAMM::loadFromTextFile(const char *filename, vector <int>* yLab
 void budgetedVectorAMM::updateUsingDataPoint(budgetedData* inputData, unsigned int oto, unsigned int t, int sign, parameters *param)
 {
 	unsigned long pointIndexPointer = inputData->ai[t];
-	unsigned long maxPointIndex = ((t + 1) == inputData->ai.size()) ? inputData->aj.size() : inputData->ai[t + 1];
+	unsigned long maxPointIndex = ((t + 1) == (unsigned int) inputData->ai.size()) ? (unsigned int) inputData->aj.size() : inputData->ai[t + 1];
 	
 	long double linKern = this->linearKernel(t, inputData, param);
 	long double divisor = (long double)sign * ((long double)oto + 1.0) * (long double)(*param).LAMBDA_PARAM * degradation;
@@ -788,6 +803,25 @@ void trainAMMonline(budgetedData *trainData, parameters *param, budgetedModelAMM
 					// update the true class weight
 					if (fx1 > 0.0)
     				{
+						// here clone the best weight if the cloning probability allows it
+						if ((unsigned int)n[i1] < (*param).BUDGET_SIZE)
+						{
+							if ((*param).CLONE_PROBABILITY > get_random_probability())
+							{
+								// clone the winning weight
+								budgetedVectorAMM *clonedVector = new budgetedVectorAMM((*param).DIMENSION, (*param).CHUNK_WEIGHT);
+								clonedVector->createVectorUsingVector((*((*model).getModel()))[i1][j1]);
+
+								// add the new cloned weight to the model
+								(*((*model).getModel()))[i1].push_back(clonedVector);
+								n[i1]++;
+								clonedVector = NULL;
+
+								// update the clone probability after successful cloning
+								(*param).CLONE_PROBABILITY *= (*param).CLONE_PROBABILITY_DECAY;
+							}
+						}
+
 						(*((*model).getModel()))[i1][j1]->updateUsingVector(currentData, numIter, 1, param);
 						
 						delete currentData;
@@ -1078,6 +1112,25 @@ void trainAMMbatch(budgetedData *trainData, parameters *param, budgetedModelAMM 
 				// update the true class weight
     			if (fx1 > 0.0)
     			{
+					// here clone the best weight if the cloning probability allows it
+					if ((unsigned int) n[i1] < (*param).BUDGET_SIZE)
+					{
+						if ((*param).CLONE_PROBABILITY > get_random_probability())
+						{
+							// clone the winning weight
+							budgetedVectorAMM *clonedVector = new budgetedVectorAMM((*param).DIMENSION, (*param).CHUNK_WEIGHT);
+							clonedVector->createVectorUsingVector((*((*model).getModel()))[i1][j1]);
+
+							// add the new cloned weight to the model
+							(*((*model).getModel()))[i1].push_back(clonedVector);
+							n[i1]++;
+							clonedVector = NULL;
+
+							// update the clone probability after successful cloning
+							(*param).CLONE_PROBABILITY *= (*param).CLONE_PROBABILITY_DECAY;
+						}
+					}
+
     				(*((*model).getModel()))[i1][j1]->updateUsingVector(currentData, numIter, 1, param);
 					
 					delete currentData;
@@ -1085,7 +1138,7 @@ void trainAMMbatch(budgetedData *trainData, parameters *param, budgetedModelAMM 
     			} 
                 else 
                 {
-    				if (n[i1] < (*param).BUDGET_SIZE)
+    				if ((unsigned int) n[i1] < (*param).BUDGET_SIZE)
                     {
                         n[i1]++;
         				currentData->updateDegradation(numIter, param);
@@ -1246,7 +1299,7 @@ void trainAMMbatch(budgetedData *trainData, parameters *param, budgetedModelAMM 
 					}
 				}
 				
-    			//calculate v
+    			// calculate v
     			if (1.0 + fx2 - assocFx > 0.0)
     			{
 					// we made a misprediction, update the weights by pushing the wrong-class weight further from the misclassified
@@ -1258,6 +1311,25 @@ void trainAMMbatch(budgetedData *trainData, parameters *param, budgetedModelAMM 
 						currentData->budgetedVector::createVectorUsingDataPoint(trainData, t, param);
 					}
 					
+					// duplicate the assigned true-class weight if the cloning probability allows it
+					if ((assocFx > 0.0) && ((unsigned int)n[i1] < (*param).BUDGET_SIZE))
+					{
+						if ((*param).CLONE_PROBABILITY > get_random_probability())
+						{
+							// clone the associated weight
+							budgetedVectorAMM *clonedVector = new budgetedVectorAMM((*param).DIMENSION, (*param).CHUNK_WEIGHT);
+							clonedVector->createVectorUsingVector((*((*model).getModel()))[i1][currAssign]);
+
+							// add the new cloned weight to the model
+							(*((*model).getModel()))[i1].push_back(clonedVector);
+							n[i1]++;
+							clonedVector = NULL;
+
+							// update the clone probability after successful cloning
+							(*param).CLONE_PROBABILITY *= (*param).CLONE_PROBABILITY_DECAY;
+						}
+					}
+
 					(*((*model).getModel()))[i1][currAssign]->updateUsingVector(currentData, numIter, 1, param);
 					(*((*model).getModel()))[i2][j2]->updateUsingVector(currentData, numIter, -1, param);
     				if ((fx1 <= 0.0) && (n[i1] < (*param).BUDGET_SIZE))

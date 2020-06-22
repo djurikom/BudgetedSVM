@@ -32,6 +32,12 @@ Table of Contents
 
 Version history
 ===============
+The current version of the software is v1.2. Compared to the previous v1.1 version,
+we have added the following changes:
+	- Added implementation of Growing AMM (GAMM) algorithm.
+	- The GAMM algorithm is an extension of the AMM method, controlled by the addition 
+		of two additional parameters: cloning probability and cloning probability decay.
+
 The current version of the software is v1.1. Compared to the previous v1.0 version,
 we have added the following changes:
 	- (OBSOLETE) The software is no longer published under GPL v3 license, instead we
@@ -65,31 +71,32 @@ we have added the following changes:
 
 The implemented algorithms
 ==========================
-The BudgetedSVM toolbox implements Pegasos, Adaptive Multi-hyperplane Machines (AMM), 
-Low-rank Linearization SVM (LLSVM), and Budgeted Stochastic Gradient Descent (BSGD)
+The BudgetedSVM toolbox implements Pegasos, Adaptive Multi-hyperplane Machines (AMM) and 
+Growing AMM, Low-rank Linearization SVM (LLSVM), and Budgeted Stochastic Gradient Descent (BSGD) 
 algorithms. An overview of the algorithm properties is given in the table below:
 
 	--------------------------------------------------------------------------------------------------------------
 	| Algorithm | Classifier type | Multi-class? |                     Available kernels                         |
 	==============================================================================================================
 	|  Pegasos  |   Linear        | Multi-class  | Linear                                                        |
-	|  AMM      |   Non-linear    | Multi-class  | Linear                                                        |
+	|  (G)AMM   |   Non-linear    | Multi-class  | Linear                                                        |
 	|  LLSVM    |   Non-linear    | Binary       | Any                                                           |
 	|  BSGD     |   Non-linear    | Multi-class  | Any for random removal, Gaussian when merging support vectors |
 	--------------------------------------------------------------------------------------------------------------
 
 For more details, please see their respective published papers. In particular, 
 the publications can be found here:
-*** "Pegasos: primal estimated sub-gradient solver for SVM" (Pegasos, found at
+*** "Pegasos: primal estimated sub-gradient solver for SVM", ICML 2007 (Pegasos, found at
 http://link.springer.com/article/10.1007/s10107-010-0420-4)
 *** "Trading Representability for Scalability: Adaptive Multi-Hyperplane Machine for 
-Nonlinear Classification" (AMM, found at "./doc/pdfs_of_algorithm_papers/AMM_paper.pdf")
-*** "Scaling up Kernel SVM on Limited Resources: A Low-rank Linearization Approach"
+Nonlinear Classification", KDD 2011 (AMM, found at "./doc/pdfs_of_algorithm_papers/AMM_paper.pdf")
+*** "Growing Adaptive Multi-Hyperplane Machines", ICML 2020 (GAMM, found at "./doc/pdfs_of_algorithm_papers/GAMM_paper.pdf")
+*** "Scaling up Kernel SVM on Limited Resources: A Low-rank Linearization Approach", AISTATS 2012
 (LLSVM, found at "./doc/pdfs_of_algorithm_papers/LLSVM_paper.pdf")
 *** "Breaking the Curse of Kernelization: Budgeted Stochastic Gradient Descent for 
-Large-Scale SVM Training" (BSGD, found at "./doc/pdfs_of_algorithm_papers/BSGD_paper.pdf")
+Large-Scale SVM Training", JMLR 2012 (BSGD, found at "./doc/pdfs_of_algorithm_papers/BSGD_paper.pdf")
 
-For our BudgetedSVM paper, which gives a brief overview of the toolbox and summarizes its
+For our BudgetedSVM paper (JMLR 2013) which gives an overview of the toolbox and summarizes its
 main features, please see a PDF file at "./doc/pdfs_of_algorithm_papers/BudgetedSVM_paper.pdf".
 
 
@@ -160,6 +167,8 @@ values in parentheses (algorithm not specified if option affects all):
 	i - polynomial or sigmoid kernel intercept (LLSVM, BSGD; 1.00)
 	m - budget maintenance in BSGD (0 - removal; 1 - merging, uses Gaussian kernel), OR
 			landmark sampling strategy in LLSVM (0 - random; 1 - k-means; 2 - k-medoids) (1)
+	C - clone probability when misclassification occurs in AMM (0)
+	y - clone probability decay when misclassification occurs in AMM (0.99)
 
 	z - training and test file are loaded in chunks so that the algorithms can
 			handle budget files on weaker computers; z specifies number of examples
@@ -178,7 +187,7 @@ The model is saved in a text file which has the following rows:
 [ALGORITHM, DIMENSION, NUMBER OF CLASSES, LABELS, NUMBER OF WEIGHTS, BIAS TERM, KERNEL WIDTH, MODEL] 
 In order to compress memory and to use the memory efficiently, we coded the model in the following way:
 
-For AMM batch, AMM online, PEGASOS:	The model is stored so that each row of the text file corresponds 
+For AMM batch, AMM online, PEGASOS: The model is stored so that each row of the text file corresponds 
 to one weight. The first element of each weight is the class of the weight, followed by the degradation 
 of the weight. The rest of the row corresponds to non-zero elements of the weight, given as 
 feature_index:feature_value, in a standard LIBSVM format.
@@ -245,8 +254,8 @@ a user should use "\" (back-slash) instead of "/" (forward-slash) when specifyin
 to the programs in the command prompt. In all examples below, algorithms should return accuracy 
 roughly around 15%.
 
-	How to train and test AMM:
-	--------------------------
+	How to train and test AMM or GAMM:
+	----------------------------------
 >> bin/budgetedsvm-train -A 1 -e 5 -L 0.001 -B 20 -D 123 -v 1 -k 10000 -c 10 a9a_train.txt a9a_model.txt
 >> bin/budgetedsvm-predict -v 1 a9a_test.txt a9a_model.txt a9a_preds.txt
 
@@ -261,6 +270,8 @@ a name for the model file, it will be created such that suffix '.model' is appen
 training file (note that we did include the model filename in the above example, namely 'a9a_model.txt').
 The second command tests the model on testing data set, and prints the accuracy on the testing set while
 saving the predictions to 'a9a_preds.txt'. We also set verbose output by writing "-v 1".
+
+If you would like to train a GAMM model, this can be done through the additional parameter "-C". For example "-C 0.2" sets the cloning probability to 0.2, while the cloning probability decay defaults to 0.99.
 
 	How to train and test LLSVM:
 	----------------------------
@@ -321,7 +332,7 @@ Djuric, N., Lan, L., Vucetic, S., & Wang, Z. (2014). BudgetedSVM: A Toolbox for 
 SVM Approximations. Journal of Machine Learning Research, 14, 3813-3817.
 
 For any questions or comments, please contact Nemanja Djuric at <nemanja@temple.edu>.
-Last updated: August 5th, 2014
+Last updated: June 21st, 2020
 
 
 Acknowledgments

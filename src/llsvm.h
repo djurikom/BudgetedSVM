@@ -65,7 +65,7 @@ class budgetedVectorLLSVM : public budgetedVector
 class budgetedModelLLSVM : public budgetedModel
 {
 	/*! \var vector <budgetedVector*> *modelLLSVMlandmarks
-		\brief Holds landmark points, used to compute the transformation matrix \link modelLLSVMmatrixW\endlink.
+		\brief Holds landmark points, used to compute the transformation matrix \link modelLLSVMmatrixW \endlink.
 	*/
 	/*! \var MatrixXd modelLLSVMmatrixW
 		\brief Holds transformation matrix, used to compute the mapping from original feature space into low-D space.

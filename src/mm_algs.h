@@ -3,14 +3,14 @@
 	\brief Defines classes and functions used for training and testing of large-scale multi-hyperplane algorithms (AMM batch, AMM online, and Pegasos).
 */
 /* 
-	Copyright (c) 2013-2014 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
+	Copyright (c) 2013-2020 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
 	All rights reserved.
 	
 	Author	:	Nemanja Djuric
 	Name	:	mm_algs.h
 	Date	:	November 19th, 2012
 	Desc.	:	Defines classes and functions used for training and testing of large-scale multi-hyperplane algorithms (AMM batch, AMM online, and Pegasos).
-	Version	:	v1.01
+	Version	:	v1.02
 */
 
 #ifndef _MM_ALGS_H
@@ -36,14 +36,14 @@ class budgetedVectorAMM : public budgetedVector
 		This can, in addition to numerical issues, also be a problem when the dimensionality of the data set is large, as in naive implementation each feature needs to be degraded independently.
 		However, instead of degrading each element separately, we can keep degradation level as a single number which is the same for all features, thus avoiding round-off problems and also speeding up the degradation step, which now amounts to a single multiplication operation. 
 		
-		Consequently, the actual feature value of a vector is equal to the value stored in \link array\endlink, multiplied by \link degradation\endlink.
+		Consequently, the actual feature value of a vector is equal to the value stored in \link array \endlink, multiplied by \link degradation \endlink.
 	*/	
 	protected:
         long double degradation;
 		
 	public:
     	/*! \fn budgetedVectorAMM(unsigned int  dim = 0, unsigned int  chnkWght = 0) : budgetedVector(dim, chnkWght)
-			\brief Constructor, initializes the vector to all zeros, and also initializes \link degradation\endlink parameter.
+			\brief Constructor, initializes the vector to all zeros, and also initializes \link degradation \endlink parameter.
 			\param [in] dim Dimensionality of the vector.
 			\param [in] chnkWght Size of each vector chunk.
 		*/
@@ -53,7 +53,7 @@ class budgetedVectorAMM : public budgetedVector
 		}
 		
 		/*! \fn double getSqrL2norm(void)
-			\brief Returns \link sqrL2norm\endlink, a squared L2-norm of the vector, which accounts for the vector degradation.
+			\brief Returns \link sqrL2norm \endlink, a squared L2-norm of the vector, which accounts for the vector degradation.
 			\return Squared L2-norm of the vector.
 		*/
 		long double getSqrL2norm(void)
@@ -82,7 +82,7 @@ class budgetedVectorAMM : public budgetedVector
 		}
 		
 		/*! \fn long double getDegradation(void)
-			\brief Returns \link degradation\endlink of a vector.
+			\brief Returns \link degradation \endlink of a vector.
 			\return Degradation of a vector.
 		*/
 		long double getDegradation(void)
@@ -91,7 +91,7 @@ class budgetedVectorAMM : public budgetedVector
 		}
 		
 		/*! \fn void setDegradation(long double)
-			\brief Sets \link degradation\endlink of a vector.
+			\brief Sets \link degradation \endlink of a vector.
 		*/
 		void setDegradation(long double deg)
 		{
@@ -99,7 +99,7 @@ class budgetedVectorAMM : public budgetedVector
 		}
 		
 		/*! \fn void updateDegradation(unsigned int iteration, parameters *param)
-			\brief Computes \link degradation\endlink of a vector.
+			\brief Computes \link degradation \endlink of a vector.
 			\param [in] iteration Training iteration at which the degradation is set, used to compute the degradation value.
 			\param [in] param The parameters of the algorithm.
 		*/
@@ -107,7 +107,6 @@ class budgetedVectorAMM : public budgetedVector
 		{
 			degradation = 1.0 / (((long double)iteration + 1.0) * (long double)(*param).LAMBDA_PARAM);
 		}
-		
 
 		/*! \fn void updateUsingDataPoint(budgetedData* inputData, unsigned int oto, unsigned int t, int sign, parameters *param)
 			\brief Updates a weight-vector when misclassification happens.
@@ -123,7 +122,6 @@ class budgetedVectorAMM : public budgetedVector
 		*/
 		void updateUsingDataPoint(budgetedData* inputData, unsigned int oto, unsigned int t, int sign, parameters *param);
 		
-
 		/*! \fn void updateUsingVector(budgetedVectorAMM* otherVector, unsigned int oto, int sign, parameters *param)
 			\brief Updates a weight-vector when misclassification happens.
 			\param [in] otherVector Misclassified example used to update the existing weight.
@@ -137,7 +135,6 @@ class budgetedVectorAMM : public budgetedVector
 		*/
 		void updateUsingVector(budgetedVectorAMM* otherVector, unsigned int oto, int sign, parameters *param);
 		
-
 		/*! \fn void createVectorUsingDataPoint(budgetedData* inputData, unsigned int oto, unsigned int t, parameters *param)
 			\brief Create new weight from one of the zero-weights.
 			\param [in] inputData Input data from which t-th vector is considered.
@@ -152,7 +149,19 @@ class budgetedVectorAMM : public budgetedVector
 			budgetedVector::createVectorUsingDataPoint(inputData, t, param);    
 			degradation = 1.0 / (((long double)oto + 1.0) * (long double)(*param).LAMBDA_PARAM);
 		}
-		
+
+		/*! \fn virtual void createVectorUsingVector(budgetedVectorAMM* existingVector)
+			\brief Create new vector from the existing one.
+			\param [in] existingVector Existing vector which will be cloned into the current one.
+
+			Initializes elements of a vector using an existing vector. If the calling vector already had non-zero elements, it is first cleared to become a zero-vector before duplicating the elements of an input vector.
+		*/
+		void createVectorUsingVector(budgetedVectorAMM* existingVector)
+		{
+			budgetedVector::createVectorUsingVector(existingVector);
+			setDegradation(existingVector->degradation);
+		}
+
 		/*! \fn virtual long double linearKernel(unsigned int t, budgetedData* inputData, parameters *param)
 			\brief Computes linear kernel between vector and given input data point, but also accounts for degradation.
 			\param [in] t Index of the input vector in the input data.

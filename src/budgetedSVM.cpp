@@ -3,14 +3,14 @@
 	\brief Implementation of classes used throughout the budgetedSVM toolbox.
 */
 /* 
-	Copyright (c) 2013-2014 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
+	Copyright (c) 2013-2020 Nemanja Djuric, Liang Lan, Slobodan Vucetic, and Zhuang Wang
 	All rights reserved.
 	
 	Authors	:	Nemanja Djuric
 	Name	:	budgetedSVM.cpp
 	Date	:	November 29th, 2012
 	Desc.	:	Implementation of classes used throughout the budgetedSVM toolbox.
-	Version	:	v1.01
+	Version	:	v1.02
 */
 
 #include <vector>
@@ -151,10 +151,7 @@ void svmPrintErrorString(const char* text)
 */
 void setPrintErrorStringFunction(funcPtr printFunc)
 {
-	if (printFunc == NULL)
-		svmPrintErrorStringStatic = &printErrorDefault;
-	else
-		svmPrintErrorStringStatic = printFunc;
+	svmPrintErrorStringStatic = (printFunc == NULL) ? &printErrorDefault : printFunc;
 }
 
 /* \fn bool readableFileExists(const char fileName[])
@@ -651,7 +648,7 @@ const float budgetedVector::operator[](int idx) const
 		return *(array[vectorInd] + arrayInd);
 }
 
-/*! fn virtual void extendDimensionality(unsigned int newDim, parameters* param)
+/* fn virtual void extendDimensionality(unsigned int newDim, parameters* param)
 	\brief Extend dimensionality of the vector.
 	\param [in] newDim New dimensionality of the vector.
 	\param [in] param The parameters of the learning algorithm.
@@ -797,6 +794,27 @@ float& budgetedVector::operator[](int idx)
 	}
 
 	return *(array[vectorInd] + arrayInd);
+}
+
+/* \fn virtual void createVectorUsingVector(budgetedVector* existingVector)
+	\brief Create new vector from the existing one.
+	\param [in] existingVector Existing vector which will be cloned into the current one.
+
+	Initializes elements of a vector using an existing vector. If the calling vector already had non-zero elements, it is first cleared to become a zero-vector before duplicating the elements of an input vector.
+*/
+void budgetedVector::createVectorUsingVector(budgetedVector* existingVector)
+{
+	clear();
+	for (unsigned int i = 0; i < arrayLength; i++)
+	{
+		if (existingVector->array[i] != NULL)
+		{
+			array[i] = new (nothrow) float[chunkWeight];
+			for (unsigned int j = 0; j < chunkWeight; j++)
+				array[i][j] = existingVector->array[i][j];
+		}
+	}
+	sqrL2norm = existingVector->sqrL2norm;
 }
 
 /* \fn virtual void createVectorUsingDataPoint(budgetedData* inputData, unsigned int t, parameters* param)
@@ -1215,8 +1233,13 @@ void printUsagePrompt(bool trainingPhase, parameters *param)
 		sprintf(text, " i - polynomial or sigmoid kernel intercept (LLSVM, BSGD; %.2f)\n", (*param).KERNEL_COEF_PARAM);
 		svmPrintString(text);
 		svmPrintString(" m - budget maintenance in BSGD (0 - removal; 1 - merging, uses Gaussian kernel), OR\n");
-		sprintf(text,  "       landmark selection in LLSVM (0 - random; 1 - k-means; 2 - k-medoids) (%d)\n\n", (*param).MAINTENANCE_SAMPLING_STRATEGY);
-		svmPrintString(text);	
+		sprintf(text,  "       landmark selection in LLSVM (0 - random; 1 - k-means; 2 - k-medoids) (%d)\n", (*param).MAINTENANCE_SAMPLING_STRATEGY);
+		svmPrintString(text);
+
+		sprintf(text, " C - clone probability when misclassification occurs in AMM (%.2f)\n", (*param).CLONE_PROBABILITY);
+		svmPrintString(text);
+		sprintf(text, " y - clone probability decay when weight cloning occurs in AMM (%.2f)\n\n", (*param).CLONE_PROBABILITY_DECAY);
+		svmPrintString(text);
 		
 		svmPrintString(" z - training and test file are loaded in chunks so that the algorithms can\n");
 		svmPrintString("       handle budget files on weaker computers; z specifies number of examples\n");
@@ -1451,6 +1474,24 @@ void parseInputPrompt(int argc, char **argv, bool trainingPhase, char *inputFile
 				
 				case 'r':
 					(*param).RANDOMIZE = (value[i] != 0);
+					break;
+
+				case 'C':
+					(*param).CLONE_PROBABILITY = (double) value[i];
+					if (((*param).CLONE_PROBABILITY < 0.0) || ((*param).CLONE_PROBABILITY > 1.0))
+					{
+						sprintf(text, "Input parameter '-C' should be a real number between 0 and 1!\nRun 'budgetedsvm-train()' for help.\n");
+						svmPrintErrorString(text);
+					}
+					break;
+
+				case 'y':
+					(*param).CLONE_PROBABILITY_DECAY = (double) value[i];
+					if (((*param).CLONE_PROBABILITY_DECAY < 0.0) || ((*param).CLONE_PROBABILITY_DECAY > 1.0))
+					{
+						sprintf(text, "Input parameter '-y' should be a real number between 0 and 1!\nRun 'budgetedsvm-train()' for help.\n");
+						svmPrintErrorString(text);
+					}
 					break;
 
 				default:
